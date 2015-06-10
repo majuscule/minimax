@@ -8,8 +8,5 @@
   </head>
   <body>
     <canvas width='450px' height='450px' id='board'></canvas>
-    <div id='controls'>
-        <div class='button' id='join'>Play!</div>
-    </div>
   </body>
 </html>
