@@ -62,9 +62,9 @@ $(document).ready(function(){
                                  this.cellSize, this.cellSize);
                 }
             }
-            if (this.turn == 'ai') {
-                minimax(this, 'x');
-            }
+//            if (this.turn == 'ai') {
+//                minimax(this, 'x');
+//            }
             return this;
         }
         this.serialize = function() {
@@ -90,26 +90,39 @@ $(document).ready(function(){
                 if (x > cell.x && x < cell.x + cell.size
                     && y > cell.y && y < cell.y + cell.size) {
                     //cell.play(Math.random() > 0.5 ? 'x' : 'o');
-                    cell.play('x');
+                    if (!cell.state) {
+                        var player = 'x';
+                        cell.play(player);
+                        var aiMove = minimax(tictactoe.serialize(), player, ii, i).move;
+                        console.log(aiMove);
+                        tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
+                        return;
+                    }
                 }
             }
         }
-        minimax(tictactoe, 'x');
     });
 
-    function generate(board, player) {
+    function generate(state, player) {
+        console.log('generating futures for ' + player);
         var possibilities = [];
-        for (var i = 0; i < board.cells.length; i++) {
-            for (var ii = 0; ii < board.cells[i].length; ii++) {
-                if (!board.cells[i][ii].state) {
-                    var future = jQuery.extend(true, [], board.serialize());
+        for (var i = 0; i < state.length; i++) {
+            for (var ii = 0; ii < state[i].length; ii++) {
+                if (!state[i][ii]) {
+                    //console.log(state[i][ii]);
+                    //console.log('i: ' + i + ', ii: ' + ii);
+                    var future = jQuery.extend(true, [], state);
                     future[i][ii] = player;
-                    possibilities.push(future);
-                    if (score(future, player, ii, i))
-                        console.log('found win condition');
+                    possibilities.push({
+                        'state'  : future,
+                        'player' : player,
+                        'x'      : ii,
+                        'y'      : i,
+                    });
                 }
             }
         }
+        return possibilities;
     }
 
     function score(state, player, x, y) {
@@ -125,21 +138,71 @@ $(document).ready(function(){
                 verticalTally++;
             if (state[i][i] == player)
                 diagonalTally++;
-            if (state[i][(size-1)-i])
+            if (state[i][(size-1)-i] == player)
                 antiDiagonalTally++;
         }
         if (horizontalTally == size
             || verticalTally == size
             || diagonalTally == size
             || antiDiagonalTally == size)
-            return 'win';
+            return player == 'o' ? 1 : -1;
     }
 
-    function minimax(board, player) {
-        generate(board, player);
-        //board.turn = 'player';
+    function minimax(state, player, x, y) {
+        console.log('minimax: ' + state + ' by ' + player + ' at ' + x + ',' + y);
+        var win = score(state, player, x, y);
+        if (win) {
+            console.log((win == 1 ? 'o' : 'x') + ' won with ' + x + ',' + y);
+            return {
+                'move'  : [x,y],
+                'score' : win
+            };
+        }
+        player = player == 'x' ? 'o' : 'x';
+        var scores = [];
+        var futures = generate(state, player);
+        for (var i in futures) {
+            var future = futures[i];
+            scores.push(minimax(future.state, future.player, future.x, future.y));
+        }
+        if (player == 'o') {
+            console.log(scores);
+            var bestScore = 1;
+            var bestMove;
+            for (var i in scores) {
+                if (scores[i].score <= bestScore) {
+                    bestScore = scores[i].score;
+                    bestMove = scores[i].move;
+                }
+            }
+            return {
+                'move'  : bestMove,
+                'score' : bestScore
+            };
+        } else if (player == 'x') {
+            console.log(scores);
+            var bestScore = -1;
+            var bestMove;
+            for (var i in scores) {
+                if (scores[i].score >= bestScore) {
+                    console.log('assigning: ' + scores[i].move + ' to bestMove');
+                    console.log(scores[i]);
+                    bestScore = scores[i].score;
+                    bestMove = scores[i].move;
+                }
+            }
+            return {
+                'move'  : bestMove,
+                'score' : bestScore
+            };
+        }
     }
 
     var tictactoe = new board(3, 'player').init();
+
+    tictactoe.cells[1][0].play('x');
+    tictactoe.cells[0][2].play('o');
+    tictactoe.cells[1][1].play('x');
+    tictactoe.cells[2][1].play('o');
 
 });
