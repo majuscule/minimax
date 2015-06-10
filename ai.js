@@ -62,9 +62,6 @@ $(document).ready(function(){
                                  this.cellSize, this.cellSize);
                 }
             }
-//            if (this.turn == 'ai') {
-//                minimax(this, 'x');
-//            }
             return this;
         }
         this.serialize = function() {
@@ -93,9 +90,11 @@ $(document).ready(function(){
                     if (!cell.state) {
                         var player = 'x';
                         cell.play(player);
-                        var aiMove = minimax(tictactoe.serialize(), player, ii, i).move;
-                        console.log(aiMove);
-                        tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
+                        if (!endCondition(tictactoe.serialize(), player, ii, i)) {
+                            var aiMove = minimax(tictactoe.serialize(), player, ii, i).move;
+                            console.log(aiMove);
+                            tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
+                        }
                         return;
                     }
                 }
@@ -146,26 +145,49 @@ $(document).ready(function(){
             || diagonalTally == size
             || antiDiagonalTally == size)
             return player == 'o' ? 1 : -1;
+        var fullCells = 0;
+        for (var i = 0; i < size; i++) {
+            for (var ii = 0; ii < size; ii++) {
+                if (state[i][ii])
+                    fullCells++;
+            }
+        }
+        if (fullCells == size*size)
+            return 0;
+        else return false;
+    }
+
+    function endCondition(state, player, x, y) {
+        if (score(state, player, x, y) !== false) {
+            return true;
+        }
     }
 
     function minimax(state, player, x, y) {
         console.log('minimax: ' + state + ' by ' + player + ' at ' + x + ',' + y);
         var win = score(state, player, x, y);
-        if (win) {
-            console.log((win == 1 ? 'o' : 'x') + ' won with ' + x + ',' + y);
+        if (win === 1 || win === -1) {
+            //console.log((win == 1 ? 'o' : 'x') + ' won with ' + x + ',' + y);
+            return {
+                'move'  : [x,y],
+                'score' : win
+            };
+        } else if (win === 0) {
             return {
                 'move'  : [x,y],
                 'score' : win
             };
         }
-        player = player == 'x' ? 'o' : 'x';
         var scores = [];
-        var futures = generate(state, player);
+        //var nextPlayer = player == 'x' ? 'o' : 'x';
+        //var futures = generate(state, nextPlayer);
+        var futures = generate(state, player == 'x' ? 'o' : 'x');
         for (var i in futures) {
             var future = futures[i];
             scores.push(minimax(future.state, future.player, future.x, future.y));
         }
-        if (player == 'o') {
+        if (player == 'x') {
+            console.log('evaluating final choices for x');
             console.log(scores);
             var bestScore = 1;
             var bestMove;
@@ -179,13 +201,15 @@ $(document).ready(function(){
                 'move'  : bestMove,
                 'score' : bestScore
             };
-        } else if (player == 'x') {
+        } else if (player == 'o') {
+            console.log('evaluating final choices for o');
             console.log(scores);
             var bestScore = -1;
             var bestMove;
             for (var i in scores) {
                 if (scores[i].score >= bestScore) {
-                    console.log('assigning: ' + scores[i].move + ' to bestMove');
+                    console.log('assigning: ' + scores[i].move
+                            + ' to bestMove with score ' + scores[i].score);
                     console.log(scores[i]);
                     bestScore = scores[i].score;
                     bestMove = scores[i].move;
@@ -202,7 +226,10 @@ $(document).ready(function(){
 
     tictactoe.cells[1][0].play('x');
     tictactoe.cells[0][2].play('o');
-    tictactoe.cells[1][1].play('x');
-    tictactoe.cells[2][1].play('o');
+    //tictactoe.cells[1][1].play('x');
+    //tictactoe.cells[2][1].play('o');
+
+    //tictactoe.cells[2][2].play('x');
+    //tictactoe.cells[1][2].play('o');
 
 });
