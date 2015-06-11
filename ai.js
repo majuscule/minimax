@@ -88,12 +88,13 @@ $(document).ready(function(){
                     && y > cell.y && y < cell.y + cell.size) {
                     //cell.play(Math.random() > 0.5 ? 'x' : 'o');
                     if (!cell.state) {
-                        var player = 'x';
+                        var player = 'o';
                         cell.play(player);
-                        if (!endCondition(tictactoe.serialize(), player, ii, i)) {
-                            var aiMove = minimax(tictactoe.serialize(), player, ii, i).move;
+                        if (!endCondition(tictactoe.serialize())) {
+                            var aiMove = minimax(tictactoe.serialize(),
+                                player == 'o' ? 'x' : 'o', ii, i).move;
                             console.log(aiMove);
-                            tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
+                            tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
                         }
                         return;
                     }
@@ -112,9 +113,9 @@ $(document).ready(function(){
                     //console.log('i: ' + i + ', ii: ' + ii);
                     var future = jQuery.extend(true, [], state);
                     future[i][ii] = player;
+                    //possibilities.push(future);
                     possibilities.push({
                         'state'  : future,
-                        'player' : player,
                         'x'      : ii,
                         'y'      : i,
                     });
@@ -124,67 +125,80 @@ $(document).ready(function(){
         return possibilities;
     }
 
-    function score(state, player, x, y) {
-        var horizontalTally = 0;
-        var verticalTally = 0;
-        var diagonalTally = 0;
-        var antiDiagonalTally = 0;
+    function endCondition(state) {
+        var horizontalPlayer, horizontalTally = 0;
+        var verticalPlayer, verticalTally = 0;
+        var diagonalPlayer, diagonalTally = 0;
+        var antiDiagonalPlayer, antiDiagonalTally = 0;
+        var fullCells = 0;
         var size = state.length;
         for (var i = 0; i < size; i++) {
-            if (state[y][i] == player)
-                horizontalTally++;
-            if (state[i][x] == player)
-                verticalTally++;
-            if (state[i][i] == player)
-                diagonalTally++;
-            if (state[i][(size-1)-i] == player)
-                antiDiagonalTally++;
-        }
-        if (horizontalTally == size
-            || verticalTally == size
-            || diagonalTally == size
-            || antiDiagonalTally == size)
-            return player == 'o' ? 1 : -1;
-        var fullCells = 0;
-        for (var i = 0; i < size; i++) {
             for (var ii = 0; ii < size; ii++) {
+                if (i == 0)
+                    verticalPlayer = state[ii][i];
+                if (ii == 0)
+                    horizontalPlayer = state[ii][i];
+                if (i == 0 && ii == 0)
+                    antiDiagonalPlayer = state[ii][i];
+                if (i == 0 && ii == size)
+                    diagonalPlayer = state[ii][i];
+                if (state[ii][i] == horizontalPlayer)
+                    horizontalTally++;
+                if (state[i][ii] == verticalPlayer)
+                    verticalTally++;
                 if (state[i][ii])
                     fullCells++;
             }
+            if (state[i][i] == diagonalPlayer)
+                diagonalTally++;
+            if (state[i][(size-1)-i] == antiDiagonalPlayer)
+                antiDiagonalTally++;
+            if (horizontalTally != size)
+                horizontalTally = 0;
+            if (verticalTally != size)
+                verticalTally = 0;
         }
+        if (horizontalTally >= size)
+            return horizontalPlayer;
+        if (verticalTally >= size)
+            return verticalPlayer;
+        if (diagonalTally == size)
+            return diagonalPlayer;
+        if (antiDiagonalTally == size)
+            return antiDiagonalPlayer;
         if (fullCells == size*size)
-            return 0;
-        else return false;
+            return 'tie';
+        return false;
     }
 
-    function endCondition(state, player, x, y) {
-        if (score(state, player, x, y) !== false) {
-            return true;
-        }
+    function score(state, player) {
+        var result = endCondition(state);
+        if (result !== false)
+            return result == player ? 1 : -1;
+        return false;
     }
 
-    function minimax(state, player, x, y) {
-        console.log('minimax: ' + state + ' by ' + player + ' at ' + x + ',' + y);
-        var win = score(state, player, x, y);
-        if (win === 1 || win === -1) {
-            //console.log((win == 1 ? 'o' : 'x') + ' won with ' + x + ',' + y);
-            return {
-                'move'  : [x,y],
-                'score' : win
-            };
-        } else if (win === 0) {
-            return {
-                'move'  : [x,y],
-                'score' : win
-            };
+    function minimax(state, player) {
+        console.log('minimax: ' + state + ' for ' + player);
+        var win = score(state, player);
+        console.log('got score: ' + win);
+        if (win !== false) {
+            return win;
         }
         var scores = [];
+        //var moves = [];
         //var nextPlayer = player == 'x' ? 'o' : 'x';
         //var futures = generate(state, nextPlayer);
-        var futures = generate(state, player == 'x' ? 'o' : 'x');
+        var futures = generate(state, player);
         for (var i in futures) {
             var future = futures[i];
-            scores.push(minimax(future.state, future.player, future.x, future.y));
+            var result = minimax(future.state, player == 'x' ? 'o' : 'x');
+            if (typeof result == 'object')
+                result = result.score;
+            scores.push({
+                    'move'  : [future.x,future.y],
+                    'score' : result
+            });
         }
         if (player == 'x') {
             console.log('evaluating final choices for x');
@@ -224,8 +238,15 @@ $(document).ready(function(){
 
     var tictactoe = new board(3, 'player').init();
 
+    tictactoe.cells[0][0].play('o');
+    tictactoe.cells[0][2].play('x');
     tictactoe.cells[1][0].play('x');
-    tictactoe.cells[0][2].play('o');
+    tictactoe.cells[2][0].play('x');
+    tictactoe.cells[2][1].play('o');
+
+
+    //tictactoe.cells[1][0].play('x');
+    //tictactoe.cells[0][2].play('o');
     //tictactoe.cells[1][1].play('x');
     //tictactoe.cells[2][1].play('o');
 
