@@ -104,7 +104,6 @@ $(document).ready(function(){
     });
 
     function generate(state, player) {
-        console.log('generating futures for ' + player);
         var possibilities = [];
         for (var i = 0; i < state.length; i++) {
             for (var ii = 0; ii < state[i].length; ii++) {
@@ -126,69 +125,93 @@ $(document).ready(function(){
     }
 
     function endCondition(state) {
+        console.log('checking for end condition');
         var horizontalPlayer, horizontalTally = 0;
         var verticalPlayer, verticalTally = 0;
         var diagonalPlayer, diagonalTally = 0;
         var antiDiagonalPlayer, antiDiagonalTally = 0;
         var fullCells = 0;
         var size = state.length;
+        var eog = false;
         for (var i = 0; i < size; i++) {
+            horizontalPlayer = state[i][0];
+            horizontalTally = 0;
             for (var ii = 0; ii < size; ii++) {
-                if (i == 0)
-                    verticalPlayer = state[ii][i];
-                if (ii == 0)
-                    horizontalPlayer = state[ii][i];
-                if (i == 0 && ii == 0)
-                    antiDiagonalPlayer = state[ii][i];
-                if (i == 0 && ii == size)
-                    diagonalPlayer = state[ii][i];
-                if (state[ii][i] == horizontalPlayer)
+                if (state[i][ii] == horizontalPlayer)
                     horizontalTally++;
-                if (state[i][ii] == verticalPlayer)
-                    verticalTally++;
-                if (state[i][ii])
+                if (state[i][ii] !== 0)
                     fullCells++;
             }
-            if (state[i][i] == diagonalPlayer)
-                diagonalTally++;
-            if (state[i][(size-1)-i] == antiDiagonalPlayer)
-                antiDiagonalTally++;
-            if (horizontalTally != size)
-                horizontalTally = 0;
-            if (verticalTally != size)
-                verticalTally = 0;
+            if (horizontalTally >= size) {
+                eog = horizontalPlayer;
+                break;
+            }
         }
-        if (horizontalTally >= size)
-            return horizontalPlayer;
-        if (verticalTally >= size)
-            return verticalPlayer;
-        if (diagonalTally == size)
-            return diagonalPlayer;
-        if (antiDiagonalTally == size)
-            return antiDiagonalPlayer;
-        if (fullCells == size*size)
-            return 'tie';
-        return false;
+        for (var i = 0; i < size; i++) {
+            verticalPlayer = state[0][i];
+            verticalTally = 0;
+            for (var ii = 0; ii < size; ii++) {
+                if (state[ii][i] == verticalPlayer)
+                    verticalTally++;
+            }
+            if (verticalTally >= size) {
+                eog = verticalPlayer;
+                break;
+            }
+        }
+        for (var i = 0; i < size; i++) {
+            if (i == 0)
+                diagonalPlayer = state[0][0];
+            for (var ii = 0; ii < size; ii++) {
+                if (i == ii && state[i][ii] == diagonalPlayer)
+                    diagonalTally++;
+            }
+            if (diagonalTally == size) {
+                eog = diagonalPlayer;
+                break;
+            }
+        }
+        for (var i = 0; i < size; i++) {
+            for (var ii = 0; ii < size; ii++) {
+                if (i == 0 && ii == size-1)
+                    antiDiagonalPlayer = state[0][size-1];
+                if (i == (size-1)-ii
+                        && state[i][ii] == antiDiagonalPlayer)
+                    antiDiagonalTally++;
+            }
+            if (antiDiagonalTally == size) {
+                eog = antiDiagonalPlayer;
+                break;
+            }
+        }
+        if (!eog && fullCells == size*size)
+            eog = 'tie';
+
+        console.log('endCondition: ' + eog);
+        return eog ? eog : false;
     }
 
     function score(state, player) {
         var result = endCondition(state);
-        if (result !== false)
+        if (result && result !== 'tie')
             return result == player ? 1 : -1;
+        if (result == 'tie') {
+            console.log(state + ' is a tie');
+            return 0;
+        }
         return false;
     }
 
     function minimax(state, player) {
         console.log('minimax: ' + state + ' for ' + player);
         var win = score(state, player);
-        console.log('got score: ' + win);
+        //console.log('got score: ' + win);
         if (win !== false) {
+            console.log('found end condition ' + win + ' for ' + player);
             return win;
         }
         var scores = [];
-        //var moves = [];
-        //var nextPlayer = player == 'x' ? 'o' : 'x';
-        //var futures = generate(state, nextPlayer);
+        //console.log('generating futures for ' + player);
         var futures = generate(state, player);
         for (var i in futures) {
             var future = futures[i];
@@ -201,7 +224,7 @@ $(document).ready(function(){
             });
         }
         if (player == 'x') {
-            console.log('evaluating final choices for x');
+            //console.log('evaluating final choices for x');
             console.log(scores);
             var bestScore = 1;
             var bestMove;
@@ -216,15 +239,15 @@ $(document).ready(function(){
                 'score' : bestScore
             };
         } else if (player == 'o') {
-            console.log('evaluating final choices for o');
+            //console.log('evaluating final choices for o');
             console.log(scores);
             var bestScore = -1;
             var bestMove;
             for (var i in scores) {
                 if (scores[i].score >= bestScore) {
-                    console.log('assigning: ' + scores[i].move
-                            + ' to bestMove with score ' + scores[i].score);
-                    console.log(scores[i]);
+//                    console.log('assigning: ' + scores[i].move
+//                            + ' to bestMove with score ' + scores[i].score);
+//                    console.log(scores[i]);
                     bestScore = scores[i].score;
                     bestMove = scores[i].move;
                 }
