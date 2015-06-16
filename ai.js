@@ -92,7 +92,7 @@ $(document).ready(function(){
                         cell.play(player);
                         if (!endCondition(tictactoe.serialize())) {
                             var aiMove = minimax(tictactoe.serialize(),
-                                player == 'o' ? 'x' : 'o', ii, i).move;
+                                player == 'o' ? 'x' : 'o').move;
                             console.log(aiMove);
                             tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
                         }
@@ -125,7 +125,7 @@ $(document).ready(function(){
     }
 
     function endCondition(state) {
-        console.log('checking for end condition');
+        //console.log('checking for end condition');
         var horizontalPlayer, horizontalTally = 0;
         var verticalPlayer, verticalTally = 0;
         var diagonalPlayer, diagonalTally = 0;
@@ -187,7 +187,7 @@ $(document).ready(function(){
         if (!eog && fullCells == size*size)
             eog = 'tie';
 
-        console.log('endCondition: ' + eog);
+        //console.log('endCondition: ' + eog);
         return eog ? eog : false;
     }
 
@@ -202,20 +202,27 @@ $(document).ready(function(){
         return false;
     }
 
-    function minimax(state, player) {
+    function minimax(state, player, activePlayer) {
         console.log('minimax: ' + state + ' for ' + player);
-        var win = score(state, player);
+        var activePlayer = typeof activePlayer == 'undefined' ? (player == 'x' ? 'o' : 'x') : activePlayer;
+        var nextPlayer = activePlayer == 'x' ? 'o' : 'x';
+        var win = score(state, activePlayer);
         //console.log('got score: ' + win);
         if (win !== false) {
-            console.log('found end condition ' + win + ' for ' + player);
+            if (win == 'tie')
+                win = 0;
+            if (player != activePlayer && win !== 0)
+                win = win === 1 ? -1 : 1;
+            console.log('found ' + (win === 1 ? 'win' : 'loss') + ' for ' + activePlayer + ' returning ' + win);
             return win;
         }
         var scores = [];
         //console.log('generating futures for ' + player);
-        var futures = generate(state, player);
+        var futures = generate(state, nextPlayer);
         for (var i in futures) {
             var future = futures[i];
-            var result = minimax(future.state, player == 'x' ? 'o' : 'x');
+            var result = minimax(future.state, player, nextPlayer);
+            console.log('got result: ' + result);
             if (typeof result == 'object')
                 result = result.score;
             scores.push({
@@ -223,8 +230,8 @@ $(document).ready(function(){
                     'score' : result
             });
         }
-        if (player == 'x') {
-            //console.log('evaluating final choices for x');
+        if (activePlayer == player) {
+            console.log('finding minimum score for ' + activePlayer + ' at ' + state);
             console.log(scores);
             var bestScore = 1;
             var bestMove;
@@ -234,46 +241,46 @@ $(document).ready(function(){
                     bestMove = scores[i].move;
                 }
             }
+            console.log('chose ' + bestMove + ' with score  ' + bestScore);
             return {
                 'move'  : bestMove,
                 'score' : bestScore
             };
-        } else if (player == 'o') {
-            //console.log('evaluating final choices for o');
+        } else {
+            console.log('finding maximum score for ' + activePlayer + ' at ' + state);
             console.log(scores);
             var bestScore = -1;
             var bestMove;
             for (var i in scores) {
                 if (scores[i].score >= bestScore) {
-//                    console.log('assigning: ' + scores[i].move
-//                            + ' to bestMove with score ' + scores[i].score);
-//                    console.log(scores[i]);
                     bestScore = scores[i].score;
                     bestMove = scores[i].move;
                 }
             }
+            console.log('chose ' + bestMove + ' with score ' + bestScore);
             return {
                 'move'  : bestMove,
                 'score' : bestScore
             };
         }
+        console.log('should never ever get here, activePlayer is ' + activePlayer + ' player is: ' + player);
     }
 
     var tictactoe = new board(3, 'player').init();
 
     tictactoe.cells[0][0].play('o');
-    tictactoe.cells[0][2].play('x');
-    tictactoe.cells[1][0].play('x');
-    tictactoe.cells[2][0].play('x');
-    tictactoe.cells[2][1].play('o');
+//    tictactoe.cells[0][2].play('x');
+//    tictactoe.cells[1][0].play('x');
+//    tictactoe.cells[2][0].play('x');
+//    tictactoe.cells[2][1].play('o');
 
 
-    //tictactoe.cells[1][0].play('x');
-    //tictactoe.cells[0][2].play('o');
-    //tictactoe.cells[1][1].play('x');
-    //tictactoe.cells[2][1].play('o');
-
-    //tictactoe.cells[2][2].play('x');
-    //tictactoe.cells[1][2].play('o');
+//    tictactoe.cells[1][0].play('x');
+//    tictactoe.cells[0][2].play('o');
+//    tictactoe.cells[1][1].play('x');
+//    tictactoe.cells[2][1].play('o');
+//
+//    tictactoe.cells[2][2].play('x');
+//    tictactoe.cells[1][2].play('o');
 
 });
