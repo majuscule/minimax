@@ -8,5 +8,6 @@
   </head>
   <body>
     <canvas width='450px' height='450px' id='board'></canvas>
+    <div class='button' id='restart'>restart</div>
   </body>
 </html>
