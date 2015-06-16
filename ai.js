@@ -8,28 +8,30 @@ $(document).ready(function(){
         this.y = y;
         this.size = size;
         this.state = 0;
-        this.play = function(player, draw) {
+        this.play = function(player, color) {
             this.state = player;
             var centerX = this.x + this.size/2;
             var centerY = this.y + this.size/2;
-            if (typeof draw == 'undefined' ? true : draw) {
-                if (player == 'o') {
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY,
-                            size/2-20, 0, 2 * Math.PI);
-                    ctx.lineWidth = 10;
-                    ctx.stroke();
-                } else if (player == 'x') {
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.lineTo(self.cellSize, canvas.height);
-                    ctx.moveTo(centerX - 50, centerY - 50);
-                    ctx.lineTo(centerX + 50, centerY + 50);
-                    ctx.moveTo(centerX + 50, centerY - 50);
-                    ctx.lineTo(centerX - 50, centerY + 50);
-                    ctx.lineWidth = 10;
-                    ctx.stroke()
-                }
+            if (typeof color != 'undefined')
+                ctx.strokeStyle = color;
+            else
+                ctx.strokeStyle = 'black';
+            if (player == 'o') {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY,
+                        size/2-20, 0, 2 * Math.PI);
+                ctx.lineWidth = 10;
+                ctx.stroke();
+            } else if (player == 'x') {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(self.cellSize, canvas.height);
+                ctx.moveTo(centerX - 50, centerY - 50);
+                ctx.lineTo(centerX + 50, centerY + 50);
+                ctx.moveTo(centerX + 50, centerY - 50);
+                ctx.lineTo(centerX - 50, centerY + 50);
+                ctx.lineWidth = 10;
+                ctx.stroke()
             }
         }
     }
@@ -89,10 +91,11 @@ $(document).ready(function(){
                     if (!cell.state) {
                         var player = 'x';
                         cell.play(player);
-                        if (!endCondition(tictactoe.serialize())) {
+                        if (!endCondition(tictactoe.serialize(), 'paintWin')) {
+                            console.log('play ball');
                             var aiMove = minimax(tictactoe.serialize(),
                                 player == 'o' ? 'x' : 'o').move;
-                            tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
+                            //tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
                         }
                         return;
                     }
@@ -119,7 +122,8 @@ $(document).ready(function(){
         return possibilities;
     }
 
-    function endCondition(state) {
+    function endCondition(state, paint) {
+                    console.log('endcondition');
         var horizontalPlayer, horizontalTally = 0;
         var verticalPlayer, verticalTally = 0;
         var diagonalPlayer, diagonalTally = 0;
@@ -133,12 +137,18 @@ $(document).ready(function(){
             for (var ii = 0; ii < size; ii++) {
                 if (state[i][ii] == horizontalPlayer)
                     horizontalTally++;
-                if (state[i][ii] !== 0)
+                if (horizontalTally == size) {
+                    if (paint)
+                        for (var iii = 0; iii < size; iii++)
+                            tictactoe.cells[i][iii].play(horizontalPlayer, 'green');
+                    return horizontalPlayer;
+                }
+                if (state[i][ii] !== 0) {
                     fullCells++;
-            }
-            if (horizontalTally >= size) {
-                eog = horizontalPlayer;
-                break;
+                    if (fullCells == size*size) {
+                        return 'tie';
+                    }
+                }
             }
         }
         for (var i = 0; i < size; i++) {
@@ -147,10 +157,12 @@ $(document).ready(function(){
             for (var ii = 0; ii < size; ii++) {
                 if (state[ii][i] == verticalPlayer)
                     verticalTally++;
-            }
-            if (verticalTally >= size) {
-                eog = verticalPlayer;
-                break;
+                if (verticalTally == size) {
+                    if (paint)
+                        for (var iii = 0; iii < size; iii++)
+                            tictactoe.cells[iii][i].play(verticalPlayer, 'green');
+                    return verticalPlayer;
+                }
             }
         }
         for (var i = 0; i < size; i++) {
@@ -159,10 +171,12 @@ $(document).ready(function(){
             for (var ii = 0; ii < size; ii++) {
                 if (i == ii && state[i][ii] == diagonalPlayer)
                     diagonalTally++;
-            }
-            if (diagonalTally == size) {
-                eog = diagonalPlayer;
-                break;
+                if (diagonalTally == size) {
+                    if (paint)
+                        for (var iii = 0; iii < size; iii++)
+                            tictactoe.cells[iii][iii].play(diagonalPlayer, 'green');
+                    return diagonalPlayer;
+                }
             }
         }
         for (var i = 0; i < size; i++) {
@@ -172,15 +186,16 @@ $(document).ready(function(){
                 if (i == (size-1)-ii
                         && state[i][ii] == antiDiagonalPlayer)
                     antiDiagonalTally++;
-            }
-            if (antiDiagonalTally == size) {
-                eog = antiDiagonalPlayer;
-                break;
+                if (antiDiagonalTally == size) {
+                    eog = antiDiagonalPlayer;
+                    if (paint)
+                        for (var i = 0; i < size; i++)
+                            tictactoe.cells[i][(size-1)-i].play(eog, 'green');
+                    break;
+                }
+                    console.log('still looping :-(');
             }
         }
-        if (!eog && fullCells == size*size)
-            eog = 'tie';
-
         return eog ? eog : false;
     }
 
@@ -247,5 +262,4 @@ $(document).ready(function(){
     }
 
     var tictactoe = new board(3, 'player').init();
-
 });
