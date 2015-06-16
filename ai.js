@@ -91,11 +91,11 @@ $(document).ready(function(){
                     if (!cell.state) {
                         var player = 'x';
                         cell.play(player);
-                        if (!endCondition(tictactoe.serialize(), 'paintWin')) {
-                            console.log('play ball');
+                        if (!endCondition(tictactoe.serialize(), true)) {
                             var aiMove = minimax(tictactoe.serialize(),
                                 player == 'o' ? 'x' : 'o').move;
-                            //tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
+                            tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
+                            endCondition(tictactoe.serialize(), true);
                         }
                         return;
                     }
@@ -123,7 +123,6 @@ $(document).ready(function(){
     }
 
     function endCondition(state, paint) {
-                    console.log('endcondition');
         var horizontalPlayer, horizontalTally = 0;
         var verticalPlayer, verticalTally = 0;
         var diagonalPlayer, diagonalTally = 0;
@@ -191,9 +190,8 @@ $(document).ready(function(){
                     if (paint)
                         for (var i = 0; i < size; i++)
                             tictactoe.cells[i][(size-1)-i].play(eog, 'green');
-                    break;
+                    return antiDiagonalPlayer;
                 }
-                    console.log('still looping :-(');
             }
         }
         return eog ? eog : false;
