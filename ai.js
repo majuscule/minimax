@@ -88,12 +88,12 @@ $(document).ready(function(){
                     && y > cell.y && y < cell.y + cell.size) {
                     //cell.play(Math.random() > 0.5 ? 'x' : 'o');
                     if (!cell.state) {
-                        var player = 'o';
+                        var player = 'x';
                         cell.play(player);
                         if (!endCondition(tictactoe.serialize())) {
                             var aiMove = minimax(tictactoe.serialize(),
                                 player == 'o' ? 'x' : 'o').move;
-                            console.log(aiMove);
+                            //console.log(aiMove);
                             tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
                         }
                         return;
@@ -196,14 +196,14 @@ $(document).ready(function(){
         if (result && result !== 'tie')
             return result == player ? 1 : -1;
         if (result == 'tie') {
-            console.log(state + ' is a tie');
+            //console.log(state + ' is a tie');
             return 0;
         }
         return false;
     }
 
     function minimax(state, player, activePlayer) {
-        console.log('minimax: ' + state + ' for ' + player);
+        //console.log('minimax: ' + state + ' for ' + player);
         var activePlayer = typeof activePlayer == 'undefined' ? (player == 'x' ? 'o' : 'x') : activePlayer;
         var nextPlayer = activePlayer == 'x' ? 'o' : 'x';
         var win = score(state, activePlayer);
@@ -213,7 +213,7 @@ $(document).ready(function(){
                 win = 0;
             if (player != activePlayer && win !== 0)
                 win = win === 1 ? -1 : 1;
-            console.log('found ' + (win === 1 ? 'win' : 'loss') + ' for ' + activePlayer + ' returning ' + win);
+            //console.log('found ' + (win === 1 ? 'win' : 'loss') + ' for ' + activePlayer + ' returning ' + win);
             return win;
         }
         var scores = [];
@@ -222,7 +222,7 @@ $(document).ready(function(){
         for (var i in futures) {
             var future = futures[i];
             var result = minimax(future.state, player, nextPlayer);
-            console.log('got result: ' + result);
+            //console.log('got result: ' + result);
             if (typeof result == 'object')
                 result = result.score;
             scores.push({
@@ -231,8 +231,8 @@ $(document).ready(function(){
             });
         }
         if (activePlayer == player) {
-            console.log('finding minimum score for ' + activePlayer + ' at ' + state);
-            console.log(scores);
+            //console.log('finding minimum score for ' + activePlayer + ' at ' + state);
+            //console.log(scores);
             var bestScore = 1;
             var bestMove;
             for (var i in scores) {
@@ -241,14 +241,14 @@ $(document).ready(function(){
                     bestMove = scores[i].move;
                 }
             }
-            console.log('chose ' + bestMove + ' with score  ' + bestScore);
+            //console.log('chose ' + bestMove + ' with score  ' + bestScore);
             return {
                 'move'  : bestMove,
                 'score' : bestScore
             };
         } else {
-            console.log('finding maximum score for ' + activePlayer + ' at ' + state);
-            console.log(scores);
+            //console.log('finding maximum score for ' + activePlayer + ' at ' + state);
+            //console.log(scores);
             var bestScore = -1;
             var bestMove;
             for (var i in scores) {
@@ -257,18 +257,18 @@ $(document).ready(function(){
                     bestMove = scores[i].move;
                 }
             }
-            console.log('chose ' + bestMove + ' with score ' + bestScore);
+            //console.log('chose ' + bestMove + ' with score ' + bestScore);
             return {
                 'move'  : bestMove,
                 'score' : bestScore
             };
         }
-        console.log('should never ever get here, activePlayer is ' + activePlayer + ' player is: ' + player);
+        //console.log('should never ever get here, activePlayer is ' + activePlayer + ' player is: ' + player);
     }
 
     var tictactoe = new board(3, 'player').init();
 
-    tictactoe.cells[0][0].play('o');
+//    tictactoe.cells[0][0].play('o');
 //    tictactoe.cells[0][2].play('x');
 //    tictactoe.cells[1][0].play('x');
 //    tictactoe.cells[2][0].play('x');
