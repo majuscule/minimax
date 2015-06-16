@@ -166,11 +166,6 @@ $(document).ready(function(){
                             tictactoe.cells[i][iii].play(horizontalPlayer, 'green');
                     eog = horizontalPlayer;
                 }
-                if (state[i][ii] !== 0) {
-                    fullCells++;
-                    if (fullCells == size*size)
-                        eog = 'tie';
-                }
             }
         }
         for (var i = 0; i < size && !eog; i++) {
@@ -211,10 +206,13 @@ $(document).ready(function(){
                 if (antiDiagonalTally == size) {
                     eog = antiDiagonalPlayer;
                     if (paint)
-                        for (var i = 0; i < size; i++)
-                            tictactoe.cells[i][(size-1)-i].play(eog, 'green');
+                        for (var iii = 0; iii < size; iii++)
+                            tictactoe.cells[iii][(size-1)-iii].play(eog, 'green');
                     eog = antiDiagonalPlayer;
                 }
+                if (state[i][ii] !== 0)
+                    if (!eog && ++fullCells == size*size)
+                        eog = 'tie';
             }
         }
         if (eog && paint) {
