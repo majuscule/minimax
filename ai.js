@@ -105,13 +105,11 @@ $(document).ready(function(){
                     && y > cell.y && y < cell.y + cell.size) {
                     if (!cell.state) {
                         tictactoe.turn = 'ai';
-                        var player = 'x';
-                        cell.play(player);
+                        cell.play('x');
                         endCondition(tictactoe.serialize(), 'paint');
                         if (!tictactoe.gameOver) {
-                            var aiMove = minimax(tictactoe.serialize(),
-                                player == 'o' ? 'x' : 'o').move;
-                            tictactoe.cells[aiMove[1]][aiMove[0]].play(player == 'o' ? 'x' : 'o');
+                            var aiMove = minimax(tictactoe.serialize(), 'o').move;
+                            tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
                             endCondition(tictactoe.serialize(), 'paint');
                             tictactoe.turn = 'player';
                         }
@@ -236,9 +234,9 @@ $(document).ready(function(){
         var activePlayer = typeof activePlayer == 'undefined' ?
                             (player == 'x' ? 'o' : 'x') : activePlayer;
         var nextPlayer = activePlayer == 'x' ? 'o' : 'x';
-        var win = score(state, player, activePlayer);
-        if (win !== false)
-            return win;
+        var eog = score(state, player, activePlayer);
+        if (eog !== false)
+            return eog;
         var scores = [];
         var futures = generate(state, nextPlayer);
         for (var i in futures) {
@@ -252,33 +250,22 @@ $(document).ready(function(){
             });
         }
         if (activePlayer == player) {
-            var bestScore = 1;
-            var bestMove;
-            for (var i in scores) {
-                if (scores[i].score <= bestScore) {
-                    bestScore = scores[i].score;
-                    bestMove = scores[i].move;
-                }
-            }
-            return {
-                'move'  : bestMove,
-                'score' : bestScore
-            };
+            var worstScore = 1;
+            var worstIndex = 0;
+            for (var i in scores)
+                if (scores[i].score <= worstScore)
+                    worstScore = scores[worstIndex = i].score;
+            return scores[worstIndex];
         } else {
             var bestScore = -1;
-            var bestMove;
-            for (var i in scores) {
-                if (scores[i].score >= bestScore) {
-                    bestScore = scores[i].score;
-                    bestMove = scores[i].move;
-                }
-            }
-            return {
-                'move'  : bestMove,
-                'score' : bestScore
-            };
+            var bestIndex = 0;
+            for (var i in scores)
+                if (scores[i].score >= bestScore)
+                    bestScore = scores[bestIndex = i].score;
+            return scores[bestIndex];
         }
     }
 
     var tictactoe = new board(3, 'player').init();
+
 });
