@@ -223,13 +223,12 @@ $(document).ready(function(){
         return eog ? eog : false;
     }
 
-    function score(state, player) {
-        var result = endCondition(state);
-        if (result && result !== 'tie')
-            return result == player ? 1 : -1;
-        if (result == 'tie') {
+    function score(state, player, activePlayer) {
+        var eog = endCondition(state);
+        if (eog === 'tie')
             return 0;
-        }
+        if (eog)
+            return eog == player ? 1 : -1;
         return false;
     }
 
@@ -237,14 +236,9 @@ $(document).ready(function(){
         var activePlayer = typeof activePlayer == 'undefined' ?
                             (player == 'x' ? 'o' : 'x') : activePlayer;
         var nextPlayer = activePlayer == 'x' ? 'o' : 'x';
-        var win = score(state, activePlayer);
-        if (win !== false) {
-            if (win == 'tie')
-                win = 0;
-            if (player != activePlayer && win !== 0)
-                win = win === 1 ? -1 : 1;
+        var win = score(state, player, activePlayer);
+        if (win !== false)
             return win;
-        }
         var scores = [];
         var futures = generate(state, nextPlayer);
         for (var i in futures) {
