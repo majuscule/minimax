@@ -91,33 +91,53 @@ $(document).ready(function(){
             }
             return serial;
         }
+        this.checkBoardPosition = function(x,y) {
+            for (var i = 0; i < tictactoe.cells.length; i++) {
+                for (var ii = 0; ii < tictactoe.cells[i].length; ii++) {
+                    var cell = tictactoe.cells[i][ii];
+                    if (x > cell.x && x < cell.x + cell.size
+                        && y > cell.y && y < cell.y + cell.size) {
+                        return cell;
+                    }
+                }
+            }
+            return false;
+        }
+        this.play = function(player, cell) {
+            this.turn = 'ai';
+            cell.play(player);
+            endCondition(tictactoe.serialize(), 'paint');
+            if (!this.gameOver) {
+                var bestMove = minimax(this.serialize(), 'o').move;
+                tictactoe.cells[bestMove[1]][bestMove[0]].play('o');
+                endCondition(tictactoe.serialize(), 'paint');
+                tictactoe.turn = 'player';
+            } else
+                $('#board').css('cursor', 'auto');
+        }
     }
+
+
+    $('#board').mousemove(function(e){
+        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
+        event = e || window.event;
+        x = event.pageX - canvas.offsetLeft,
+        y = event.pageY - canvas.offsetTop;
+        var cell = tictactoe.checkBoardPosition(x,y);
+        if (cell && !cell.state)
+            $('#board').css('cursor', 'pointer');
+        else
+            $('#board').css('cursor', 'auto');
+    });
 
     $('#board').on('click', function(e){
         if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
         event = e || window.event;
         x = event.pageX - canvas.offsetLeft,
         y = event.pageY - canvas.offsetTop;
-        for (var i = 0; i < tictactoe.cells.length; i++) {
-            for (var ii = 0; ii < tictactoe.cells[i].length; ii++) {
-                var cell = tictactoe.cells[i][ii];
-                if (x > cell.x && x < cell.x + cell.size
-                    && y > cell.y && y < cell.y + cell.size) {
-                    if (!cell.state) {
-                        tictactoe.turn = 'ai';
-                        cell.play('x');
-                        endCondition(tictactoe.serialize(), 'paint');
-                        if (!tictactoe.gameOver) {
-                            var aiMove = minimax(tictactoe.serialize(), 'o').move;
-                            tictactoe.cells[aiMove[1]][aiMove[0]].play('o');
-                            endCondition(tictactoe.serialize(), 'paint');
-                            tictactoe.turn = 'player';
-                        }
-                        return;
-                    }
-                }
-            }
-        }
+        var cell = tictactoe.checkBoardPosition(x,y);
+        if (cell && !cell.state)
+            tictactoe.play('x', cell);
     });
 
     $('#restart').on('click', function(e){
