@@ -4,7 +4,6 @@ $(document).ready(function(){
     var ctx = canvas.getContext('2d');
 
     function board(size, startingActor) {
-        var self = this;
         this.size = size;
         this.turn = startingActor;
         this.cellSize = canvas.width / size;
