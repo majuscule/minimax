@@ -165,68 +165,63 @@ $(document).ready(function(){
     }
 
     function endCondition(state, paint) {
-        var horizontalPlayer, horizontalTally = 0;
-        var verticalPlayer, verticalTally = 0;
-        var diagonalPlayer, diagonalTally = 0;
-        var antiDiagonalPlayer, antiDiagonalTally = 0;
-        var fullCells = 0;
+        var player, eog = fullCells = tally = 0;
         var size = state.length;
-        var eog = false;
         for (var i = 0; i < size && !eog; i++) {
-            horizontalPlayer = state[i][0];
-            horizontalTally = 0;
+            player = state[i][0];
+            tally = 0;
             for (var ii = 0; ii < size && !eog; ii++) {
-                if (state[i][ii] == horizontalPlayer)
-                    horizontalTally++;
-                if (horizontalTally == size) {
+                if (state[i][ii] == player)
+                    tally++;
+                if (tally == size) {
                     if (paint)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[i][iii].play(horizontalPlayer, 'green');
-                    eog = horizontalPlayer;
+                            tictactoe.cells[i][iii].play(player, 'green');
+                    eog = player;
                 }
             }
         }
-        for (var i = 0; i < size && !eog; i++) {
-            verticalPlayer = state[0][i];
-            verticalTally = 0;
+        for (var i = 0, tally = 0; i < size && !eog; i++) {
+            player = state[0][i];
+            tally = 0;
             for (var ii = 0; ii < size && !eog; ii++) {
-                if (state[ii][i] == verticalPlayer)
-                    verticalTally++;
-                if (verticalTally == size) {
+                if (state[ii][i] == player)
+                    tally++;
+                if (tally == size) {
                     if (paint)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[iii][i].play(verticalPlayer, 'green');
-                    eog = verticalPlayer;
+                            tictactoe.cells[iii][i].play(player, 'green');
+                    eog = player;
                 }
             }
         }
-        for (var i = 0; i < size && !eog; i++) {
+        for (var i = 0, tally = 0; i < size && !eog; i++) {
             if (i == 0)
-                diagonalPlayer = state[0][0];
+                player = state[0][0];
             for (var ii = 0; ii < size && !eog; ii++) {
-                if (i == ii && state[i][ii] == diagonalPlayer)
-                    diagonalTally++;
-                if (diagonalTally == size) {
+                if (i == ii && state[i][ii] == player)
+                    tally++;
+                if (tally == size) {
                     if (paint)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[iii][iii].play(diagonalPlayer, 'green');
-                    eog = diagonalPlayer;
+                            tictactoe.cells[iii][iii].play(player, 'green');
+                    eog = player;
                 }
             }
         }
-        for (var i = 0; i < size && !eog; i++) {
+        for (var i = 0, tally = 0; i < size && !eog; i++) {
             for (var ii = 0; ii < size && !eog; ii++) {
                 if (i == 0 && ii == size-1)
-                    antiDiagonalPlayer = state[0][size-1];
+                    player = state[0][size-1];
                 if (i == (size-1)-ii
-                        && state[i][ii] == antiDiagonalPlayer)
-                    antiDiagonalTally++;
-                if (antiDiagonalTally == size) {
-                    eog = antiDiagonalPlayer;
+                        && state[i][ii] == player)
+                    tally++;
+                if (tally == size) {
+                    eog = player;
                     if (paint)
                         for (var iii = 0; iii < size; iii++)
                             tictactoe.cells[iii][(size-1)-iii].play(eog, 'green');
-                    eog = antiDiagonalPlayer;
+                    eog = player;
                 }
                 if (state[i][ii] !== 0)
                     if (!eog && ++fullCells == size*size)
