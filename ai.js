@@ -92,9 +92,9 @@ $(document).ready(function(){
             return serial;
         }
         this.checkBoardPosition = function(x,y) {
-            for (var i = 0; i < tictactoe.cells.length; i++) {
-                for (var ii = 0; ii < tictactoe.cells[i].length; ii++) {
-                    var cell = tictactoe.cells[i][ii];
+            for (var i = 0; i < this.cells.length; i++) {
+                for (var ii = 0; ii < this.cells[i].length; ii++) {
+                    var cell = this.cells[i][ii];
                     if (x > cell.x && x < cell.x + cell.size
                         && y > cell.y && y < cell.y + cell.size) {
                         return cell;
@@ -106,14 +106,22 @@ $(document).ready(function(){
         this.play = function(player, cell) {
             this.turn = 'ai';
             cell.play(player);
-            endCondition(tictactoe.serialize(), 'paint');
+            endCondition(this.serialize(), 'paint');
             if (!this.gameOver) {
                 var bestMove = minimax(this.serialize(), 'o').move;
-                tictactoe.cells[bestMove[1]][bestMove[0]].play('o');
-                endCondition(tictactoe.serialize(), 'paint');
-                tictactoe.turn = 'player';
+                this.cells[bestMove[1]][bestMove[0]].play('o');
+                endCondition(this.serialize(), 'paint');
+                this.turn = 'player';
             } else
                 $('#board').css('cursor', 'auto');
+        }
+        this.endGame = function(player, cells) {
+            this.gameOver = 1;
+            if (cells)
+                for (var i = 0; i < cells.length; i++)
+                    this.cells[cells[i][0]][cells[i][1]].play(player, 'green');
+            $('#board').fadeTo('slow', 0.2);
+            $('#restart').fadeIn('slow');
         }
     }
 
@@ -164,9 +172,10 @@ $(document).ready(function(){
         return possibilities;
     }
 
-    function endCondition(state, paint) {
+    function endCondition(state, finalize) {
         var player, eog = fullCells = tally = 0;
         var size = state.length;
+        var cells = [];
         for (var i = 0; i < size && !eog; i++) {
             player = state[i][0];
             tally = 0;
@@ -174,9 +183,9 @@ $(document).ready(function(){
                 if (state[i][ii] == player)
                     tally++;
                 if (tally == size) {
-                    if (paint)
+                    if (finalize)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[i][iii].play(player, 'green');
+                            cells.push([i,iii]);
                     eog = player;
                 }
             }
@@ -188,9 +197,9 @@ $(document).ready(function(){
                 if (state[ii][i] == player)
                     tally++;
                 if (tally == size) {
-                    if (paint)
+                    if (finalize)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[iii][i].play(player, 'green');
+                            cells.push([iii,i]);
                     eog = player;
                 }
             }
@@ -202,9 +211,9 @@ $(document).ready(function(){
                 if (i == ii && state[i][ii] == player)
                     tally++;
                 if (tally == size) {
-                    if (paint)
+                    if (finalize)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[iii][iii].play(player, 'green');
+                            cells.push([iii,iii]);
                     eog = player;
                 }
             }
@@ -218,9 +227,9 @@ $(document).ready(function(){
                     tally++;
                 if (tally == size) {
                     eog = player;
-                    if (paint)
+                    if (finalize)
                         for (var iii = 0; iii < size; iii++)
-                            tictactoe.cells[iii][(size-1)-iii].play(eog, 'green');
+                            cells.push([iii,(size-1)-iii]);
                     eog = player;
                 }
                 if (state[i][ii] !== 0)
@@ -228,11 +237,8 @@ $(document).ready(function(){
                         eog = 'tie';
             }
         }
-        if (eog && paint) {
-            tictactoe.gameOver = 1;
-            $('#board').fadeTo('slow', 0.2);
-            $('#restart').fadeIn('slow');
-        }
+        if (eog && finalize)
+            tictactoe.endGame(eog, cells)
         return eog ? eog : false;
     }
 
