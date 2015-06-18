@@ -8,7 +8,6 @@ $(document).ready(function(){
         this.size = size;
         this.turn = startingActor;
         this.cellSize = canvas.width / size;
-        this.gameOver = 0;
         this.cells = [];
         this.init = function() {
             ctx.lineWidth = 2;
@@ -77,7 +76,6 @@ $(document).ready(function(){
                     this.cells[i][ii].clear();
                 }
             }
-            this.gameOver = 0;
             this.turn = startingActor;
         }
         this.serialize = function() {
@@ -105,17 +103,17 @@ $(document).ready(function(){
         this.play = function(player, cell) {
             this.turn = 'ai';
             cell.play(player);
-            endCondition(this.serialize(), 'paint');
-            if (!this.gameOver) {
+            endCondition(this.serialize(), true);
+            if (this.turn) {
                 var bestMove = minimax(this.serialize(), 'o').move;
                 this.cells[bestMove[1]][bestMove[0]].play('o');
-                endCondition(this.serialize(), 'paint');
+                endCondition(this.serialize(), true);
                 this.turn = 'player';
             } else
                 $('#board').css('cursor', 'auto');
         }
         this.endGame = function(player, cells) {
-            this.gameOver = 1;
+            this.turn = false;
             if (cells)
                 for (var i = 0; i < cells.length; i++)
                     this.cells[cells[i][0]][cells[i][1]].play(player, 'green');
@@ -258,10 +256,10 @@ $(document).ready(function(){
     }
 
     $('#board').mousemove(function(e){
-        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
-        event = e || window.event;
-        x = event.pageX - canvas.offsetLeft,
-        y = event.pageY - canvas.offsetTop;
+        if (!tictactoe || tictactoe.turn != 'player') return;
+        var event = e || window.event;
+        var x = event.pageX - canvas.offsetLeft;
+        var y = event.pageY - canvas.offsetTop;
         var cell = tictactoe.checkBoardPosition(x,y);
         if (cell && !cell.state)
             $('#board').css('cursor', 'pointer');
@@ -270,10 +268,10 @@ $(document).ready(function(){
     });
 
     $('#board').on('click', function(e){
-        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
-        event = e || window.event;
-        x = event.pageX - canvas.offsetLeft,
-        y = event.pageY - canvas.offsetTop;
+        if (!tictactoe || tictactoe.turn != 'player') return;
+        var event = e || window.event;
+        var x = event.pageX - canvas.offsetLeft;
+        var y = event.pageY - canvas.offsetTop;
         var cell = tictactoe.checkBoardPosition(x,y);
         if (cell && !cell.state)
             tictactoe.play('x', cell);
