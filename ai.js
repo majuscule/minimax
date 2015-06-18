@@ -54,9 +54,7 @@ $(document).ready(function(){
                     ctx.lineWidth = 10;
                     ctx.stroke();
                 } else if (player == 'x') {
-                    ctx.moveTo(centerX, centerY);
                     ctx.beginPath();
-                    ctx.lineTo(self.cellSize, canvas.height);
                     ctx.moveTo(centerX - 50, centerY - 50);
                     ctx.lineTo(centerX + 50, centerY + 50);
                     ctx.moveTo(centerX + 50, centerY - 50);
