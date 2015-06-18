@@ -151,9 +151,8 @@ $(document).ready(function(){
                 if (state[i][ii] == player)
                     tally++;
                 if (tally == size) {
-                    if (finalize)
-                        for (var iii = 0; iii < size; iii++)
-                            cells.push([i,iii]);
+                    for (var iii = 0; iii < size; iii++)
+                        cells.push([i,iii]);
                     eog = player;
                 }
             }
@@ -165,9 +164,8 @@ $(document).ready(function(){
                 if (state[ii][i] == player)
                     tally++;
                 if (tally == size) {
-                    if (finalize)
-                        for (var iii = 0; iii < size; iii++)
-                            cells.push([iii,i]);
+                    for (var iii = 0; iii < size; iii++)
+                        cells.push([iii,i]);
                     eog = player;
                 }
             }
@@ -179,9 +177,8 @@ $(document).ready(function(){
                 if (i == ii && state[i][ii] == player)
                     tally++;
                 if (tally == size) {
-                    if (finalize)
-                        for (var iii = 0; iii < size; iii++)
-                            cells.push([iii,iii]);
+                    for (var iii = 0; iii < size; iii++)
+                        cells.push([iii,iii]);
                     eog = player;
                 }
             }
@@ -195,9 +192,8 @@ $(document).ready(function(){
                     tally++;
                 if (tally == size) {
                     eog = player;
-                    if (finalize)
-                        for (var iii = 0; iii < size; iii++)
-                            cells.push([iii,(size-1)-iii]);
+                    for (var iii = 0; iii < size; iii++)
+                        cells.push([iii,(size-1)-iii]);
                     eog = player;
                 }
                 if (state[i][ii] !== 0)
