@@ -3,43 +3,6 @@ $(document).ready(function(){
     var canvas = $('#board')[0];
     var ctx = canvas.getContext('2d');
 
-    function cell(x, y, size) {
-        this.x = x;
-        this.y = y;
-        this.size = size;
-        this.state = 0;
-        this.play = function(player, color) {
-            this.state = player;
-            var centerX = this.x + this.size/2;
-            var centerY = this.y + this.size/2;
-            if (typeof color != 'undefined')
-                ctx.strokeStyle = color;
-            else
-                ctx.strokeStyle = 'black';
-            if (player == 'o') {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY,
-                        size/2-20, 0, 2 * Math.PI);
-                ctx.lineWidth = 10;
-                ctx.stroke();
-            } else if (player == 'x') {
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(self.cellSize, canvas.height);
-                ctx.moveTo(centerX - 50, centerY - 50);
-                ctx.lineTo(centerX + 50, centerY + 50);
-                ctx.moveTo(centerX + 50, centerY - 50);
-                ctx.lineTo(centerX - 50, centerY + 50);
-                ctx.lineWidth = 10;
-                ctx.stroke()
-            }
-        }
-        this.clear = function() {
-            ctx.clearRect(this.x+5, this.y+5, this.size-20, this.size-20);
-            this.state = 0;
-        }
-    }
-
     function board(size, startingActor) {
         var self = this;
         this.size = size;
@@ -66,11 +29,47 @@ $(document).ready(function(){
                         ctx.stroke();
                     }
                     this.cells[i][ii] =
-                        new cell(this.cellSize*ii, this.cellSize*i,
+                        new this.cell(this.cellSize*ii, this.cellSize*i,
                                  this.cellSize, this.cellSize);
                 }
             }
             return this;
+        }
+        this.cell = function(x, y, size) {
+            this.x = x;
+            this.y = y;
+            this.size = size;
+            this.state = 0;
+            this.play = function(player, color) {
+                this.state = player;
+                var centerX = this.x + this.size/2;
+                var centerY = this.y + this.size/2;
+                if (typeof color != 'undefined')
+                    ctx.strokeStyle = color;
+                else
+                    ctx.strokeStyle = 'black';
+                if (player == 'o') {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY,
+                            size/2-20, 0, 2 * Math.PI);
+                    ctx.lineWidth = 10;
+                    ctx.stroke();
+                } else if (player == 'x') {
+                    ctx.moveTo(centerX, centerY);
+                    ctx.beginPath();
+                    ctx.lineTo(self.cellSize, canvas.height);
+                    ctx.moveTo(centerX - 50, centerY - 50);
+                    ctx.lineTo(centerX + 50, centerY + 50);
+                    ctx.moveTo(centerX + 50, centerY - 50);
+                    ctx.lineTo(centerX - 50, centerY + 50);
+                    ctx.lineWidth = 10;
+                    ctx.stroke()
+                }
+            }
+            this.clear = function() {
+                ctx.clearRect(this.x+5, this.y+5, this.size-20, this.size-20);
+                this.state = 0;
+            }
         }
         this.restart = function() {
             for (var i = 0; i < this.size; i++) {
@@ -124,35 +123,6 @@ $(document).ready(function(){
             $('#restart').fadeIn('slow');
         }
     }
-
-
-    $('#board').mousemove(function(e){
-        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
-        event = e || window.event;
-        x = event.pageX - canvas.offsetLeft,
-        y = event.pageY - canvas.offsetTop;
-        var cell = tictactoe.checkBoardPosition(x,y);
-        if (cell && !cell.state)
-            $('#board').css('cursor', 'pointer');
-        else
-            $('#board').css('cursor', 'auto');
-    });
-
-    $('#board').on('click', function(e){
-        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
-        event = e || window.event;
-        x = event.pageX - canvas.offsetLeft,
-        y = event.pageY - canvas.offsetTop;
-        var cell = tictactoe.checkBoardPosition(x,y);
-        if (cell && !cell.state)
-            tictactoe.play('x', cell);
-    });
-
-    $('#restart').on('click', function(e){
-            tictactoe.restart();
-            $('#board').fadeTo('slow', 1);
-            $('#restart').fadeOut('slow');
-    });
 
     function generate(state, player) {
         var possibilities = [];
@@ -286,6 +256,34 @@ $(document).ready(function(){
             return scores[bestIndex];
         }
     }
+
+    $('#board').mousemove(function(e){
+        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
+        event = e || window.event;
+        x = event.pageX - canvas.offsetLeft,
+        y = event.pageY - canvas.offsetTop;
+        var cell = tictactoe.checkBoardPosition(x,y);
+        if (cell && !cell.state)
+            $('#board').css('cursor', 'pointer');
+        else
+            $('#board').css('cursor', 'auto');
+    });
+
+    $('#board').on('click', function(e){
+        if (!tictactoe || tictactoe.gameOver || tictactoe.turn != 'player') return;
+        event = e || window.event;
+        x = event.pageX - canvas.offsetLeft,
+        y = event.pageY - canvas.offsetTop;
+        var cell = tictactoe.checkBoardPosition(x,y);
+        if (cell && !cell.state)
+            tictactoe.play('x', cell);
+    });
+
+    $('#restart').on('click', function(e){
+            tictactoe.restart();
+            $('#board').fadeTo('slow', 1);
+            $('#restart').fadeOut('slow');
+    });
 
     var tictactoe = new board(3, 'player').init();
 
